@@ -1,10 +1,9 @@
-var Fb = function(params, callback) {
+var FbSocialApi = function(params, callback) {
 	var instance = this;
 
 	var apiUrl = 'http://connect.facebook.net/en_US/all.js';
-	instance.api = null;
 
-	params = $.extend({
+	params = jQuery.extend({
 		install_message: 'install this great app',
 		fields: 'uid,first_name,middle_name,last_name,name,locale,current_location,pic_square,profile_url,sex'
 	}, params);
@@ -39,10 +38,10 @@ var Fb = function(params, callback) {
 	};
 	// service methods
 	this.postWall = function(params, callback) {
-		params = $.extend({id: FB.getSession().uid}, params);
+		params = jQuery.extend({id: FB.getSession().uid}, params);
 		params.to = params.id;
 
-		FB.ui($.extend({method: 'feed'}, params), function(response) {
+		FB.ui(jQuery.extend({method: 'feed'}, params), function(response) {
 			callback ? callback(response) : null;
 		});
 	};
@@ -55,14 +54,13 @@ var Fb = function(params, callback) {
 	};
 
 	// constructor
-	$(document).ready(function() {
-		$("body").prepend($("<div id='fb-root'></div>"));
-		$.getScript(apiUrl, function() {
-			FB.init({appId: params.fb_id, status: true, cookie: true, xfbml: false});
-			FB.Canvas.setAutoResize(false);
-			instance.api = FB;
-			callback ? callback() : null;
-		});
+	if (!jQuery('#fb-root').length) {
+		jQuery("body").prepend(jQuery("<div id='fb-root'></div>"));
+	}
+	jQuery.getScript(apiUrl, function() {
+		FB.init({appId: params.fb_id, status: true, cookie: true, xfbml: false});
+		FB.Canvas.setAutoResize(false);
+		instance.raw = FB;
+		callback ? callback() : null;
 	});
-
 };

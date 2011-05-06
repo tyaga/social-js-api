@@ -1,10 +1,9 @@
-var Vk = function(params, callback) {
+var VkSocialApi = function(params, callback) {
 	var instance = this;
 
 	var apiUrl = 'http://vkontakte.ru/js/api/xd_connection.js?2';
-	instance.api = null;
 
-	params = $.extend({
+	params = jQuery.extend({
 		fields: 'uid,first_name,last_name,nickname,sex,bdate,city,country,timezone,photo,photo_medium,photo_big,domain'
 	}, params);
 
@@ -45,7 +44,7 @@ var Vk = function(params, callback) {
 	};
 	// service methods
 	this.postWall = function(params, callback) {
-		params = $.extend({'id': VK.params.viewer_id}, params);
+		params = jQuery.extend({'id': VK.params.viewer_id}, params);
 
 		VK.api('wall.post', {owner_id: params.id, message: params.message}, function(data) {
 			callback ? callback(data.response) : null;
@@ -59,11 +58,11 @@ var Vk = function(params, callback) {
 		VK.callMethod('showPaymentBox', params.votes);
 	};
 	// constructor
-	$(document).ready(function() { $.getScript(apiUrl, function() {
+	jQuery.getScript(apiUrl, function() {
 		VK.init(function() {
 			VK.loadParams(document.location.href);
-			instance.api = VK;
+			instance.raw = VK;
 			callback ? callback() : null;
 		});
-	})});
+	});
 };

@@ -1,6 +1,5 @@
-var Mm = function(params, callback) {
+var MmSocialApi = function(params, callback) {
 	var instance = this;
-	instance.api = null;
 
 	// private
 	var apiUrl = 'http://cdn.connect.mail.ru/js/loader.js';
@@ -53,7 +52,7 @@ var Mm = function(params, callback) {
 	};
 	// service methods
 	this.postWall = function(params, callback) {
-		params = $.extend({'id': mailru.session.vid}, params);
+		params = jQuery.extend({'id': mailru.session.vid}, params);
 		wrap_api(function() {
 			if (params.id == mailru.session.vid) {
 				var eventSTId = mailru.events.listen(mailru.common.events.streamPublish, function(event) {
@@ -91,11 +90,11 @@ var Mm = function(params, callback) {
 		});
 	};
 	// constructor
-	$(document).ready(function() { $.getScript(apiUrl, function() {
+	jQuery.getScript(apiUrl, function() {
 		wrap_api(function() {
 			mailru.app.init(params.mm_key);
-			instance.api = mailru;
+			instance.raw = mailru;
 			callback ? callback() : null;
 		});
-	})});
+	});
 };

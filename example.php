@@ -1,13 +1,3 @@
-<?
-$api = $_GET['api'];
-
-$driver = null;
-if (in_array($api, array('vk', 'mm', 'fb', 'ok'))) {
-	$driver = ucfirst($api);
-}
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!doctype html>
 <html>
 <head>
@@ -15,59 +5,58 @@ if (in_array($api, array('vk', 'mm', 'fb', 'ok'))) {
 	<title>API test app</title>
 
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js" type="text/javascript"></script>
-
-	<script src="api/vk.js" type="text/javascript"></script>
-	<script src="api/mm.js" type="text/javascript"></script>
-	<script src="api/fb.js" type="text/javascript"></script>
+	<script src="social-api.js" type="text/javascript"></script>
 
 	<script type="text/javascript" language="javascript">
-		function log() { for (var i in arguments) console.log(arguments[i]); }
-
-		var driver = '<?=$driver;?>';
-
-		var MM_api_key = '1b6cf14981d250cb282adf96e33b4dde';
-		var FB_api_id =  '173107166050886';
-
-		context = {
-			friends: [],
-			appFriends: [],
-			current: null
-		};
-		wrapper = null;
+		function log() {
+			for (var i in arguments) {
+				console.log(arguments[i]);
+				//jQuery('#debug').html(JSON.stringify(arguments[i], null, '  '));
+			}
+		}
+		jQuery(document).ready(function() {
+			var driver = '<?=$_GET['api']?>';
+			var params = {
+				mm_key: '1b6cf14981d250cb282adf96e33b4dde',
+				fb_id: '173107166050886'
+			};
+			new SocialApiWrapper(driver, params, init);
+		});
 
 		function init() {
 			var appFriendsCB = function(appFriends) {
-				context.appFriends = appFriends;
-				log(context);
-				$("#test-methods").show('fast');
+				App.context.appFriends = appFriends;
+				log(App.context);
+				jQuery("#test-methods").show('fast');
 			};
 			var friendsCB = function(friends) {
-				context.friends = friends;
-				wrapper.getAppFriends(appFriendsCB);
+				App.context.friends = friends;
+				socialWrapper.getAppFriends(appFriendsCB);
 			};
 			var currentCB = function(user) {
-				context.current = user;
-				wrapper.getFriends(friendsCB);
+				App.context.current = user;
+				socialWrapper.getFriends(friendsCB);
 			};
-			wrapper.getCurrentUser(currentCB);
+			socialWrapper.getCurrentUser(currentCB);
 		}
-		wrapper = new window[driver]({
-			mm_key: MM_api_key,
-			fb_id: FB_api_id
-		}, init);
 
 		var App = {
+			context: {
+				friends: [],
+				appFriends: [],
+				current: null
+			},
 			postWall: function() {
-				wrapper.postWall({
-					id: context.friends[0].uid,
+				socialWrapper.postWall({
+					id: App.context.friends[0].uid,
 					message: 'test'
 				}, function() {
-					log('wall posted');
+					log('Message to the wall has posted');
 				});
 			},
 			makePayment: function() {
 				var params = {};
-				switch(wrapper.getApiName()) {
+				switch(socialWrapper.getApiName()) {
 					case 'mm':
 						params = {
 							service_id: 1,
@@ -82,23 +71,34 @@ if (in_array($api, array('vk', 'mm', 'fb', 'ok'))) {
 						};
 						break;
 				}
-				wrapper.makePayment(params, function() {
-					log('Payment done, I\'M RICH, FUCK YEAH!');
+				socialWrapper.makePayment(params, function() {
+					log('Payment has done!');
+				});
+			},
+			testVK: function() {
+				socialWrapper.raw.api('getGroups', {}, function(data){
+					log(data.response);
 				});
 			}
 		};
+
 	</script>
 </head>
 
 <body>
-	<h4>Test app for api wrapper</h4>
+	<h4>Тестируем методы socialWrapper</h4>
 	<ul style="display:none;" id="test-methods">
-		<li><a href="javascript:void(0);" onclick="App.postWall()">Опубликовать на стену</a></li>
+		<li><a href="javascript:void(0);" onclick="App.postWall()">Опубликовать на стену певому в списке друзей</a></li>
 		<li><a href="javascript:void(0);" onclick="App.makePayment()">Заплатить денег</a></li>
-		<li><a href="javascript:void(0);" onclick="wrapper.inviteFriends()">Пригласить друзей</a></li>
-		<li><a href="javascript:void(0);" onclick="wrapper.resizeWindow({height: 2000});">Увеличить высоту приложения</a></li>
-	</ul>
+		<li><a href="javascript:void(0);" onclick="socialWrapper.inviteFriends()">Пригласить друзей</a></li>
+		<li><a href="javascript:void(0);" onclick="socialWrapper.resizeWindow({height: 2000});">Увеличить высоту приложения</a></li>
 
+		<li><a href="javascript:void(0);" onclick="App.testVK()">Только VK - getGroups</a></li>
+	</ul>
+	<pre>
+		<div id="debug">
+		</div>
+	</pre>
 </body>
 
 </html>
