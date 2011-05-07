@@ -52,7 +52,7 @@ var VkSocialApi = function(params, callback) {
 		},
 		// service methods
 		postWall : function(params, callback) {
-			params = jQuery.extend({'id': VK.params.viewer_id}, params);
+			params = jQuery.extend({id: VK.params.viewer_id}, params);
 
 			VK.api('wall.post', {owner_id: params.id, message: params.message}, function(data) {
 				//if (data.error) throw data.error;

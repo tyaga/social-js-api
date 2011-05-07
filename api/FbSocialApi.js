@@ -4,10 +4,8 @@ var FbSocialApi = function(params, callback) {
 	var apiUrl = 'http://connect.facebook.net/en_US/all.js';
 
 	params = jQuery.extend({
-		install_message: 'install this great app',
 		fields: 'uid,first_name,middle_name,last_name,name,locale,current_location,pic_square,profile_url,sex'
 	}, params);
-
 
 	var moduleExport = {
 		// raw api object - returned from remote social network
@@ -30,9 +28,15 @@ var FbSocialApi = function(params, callback) {
 			});
 		},
 		// utilities
-		inviteFriends : function(callback) {
-			FB.ui({method : 'apprequests', message : params.install_message, data : params.install_data }, function(data){
-				callback ? callback(data) : null;
+		inviteFriends : function() {
+			var local_params = arguments[0] || null;
+			var local_callback = arguments[1] || null;
+			if (typeof local_params == 'function') {
+				local_callback = local_params;
+			}
+
+			FB.ui({method : 'apprequests', message : local_params.install_message, data : {} }, function(data){
+				local_callback ? local_callback(data) : null;
 			});
 		},
 		resizeWindow : function(params, callback) {

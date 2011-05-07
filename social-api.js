@@ -35,7 +35,7 @@ var SocialApiWrapper = function(driver, params, callback) {
 			case 'fb': case 'facebook':
 				return 'FbSocialApi';
 				break;
-			case 'ok': case 'odnoklassniki':
+			case 'ok': case 'odnoklassniki': case 'odkl':
 				return 'OkSocialApi';
 				break;
 		}

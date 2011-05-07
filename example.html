@@ -29,7 +29,10 @@
 
 				// какие данные надо проинициализировать сразу в конструкторе
 				init_user: true,
-				init_friends: true
+				init_friends: true,
+
+				// песочница в одноклассниках
+				ok_sandbok: true
 			},
 
 			init: function(initedContext) {
@@ -49,9 +52,9 @@
 			postWall: function() {
 				wrap.postWall({
 					id: App.context.friends.sort(function(){return Math.random()})[0].uid,
-					message: 'test'
+					message: 'Странное сообщение на стену'
 				}, function() {
-					log('Message to the wall has posted');
+					log('Message to the wall has posted', arguments);
 				});
 			},
 			makePayment: function() {
@@ -70,9 +73,22 @@
 							votes: 5
 						};
 						break;
+					case 'ok':
+						params = {
+							name: 'test name',
+							description: 'test description',
+							items: [{
+								name: 'test',
+								price: 2,
+								code: 'coins'
+							}]
+						};
+						break;
 				}
-				wrap.makePayment(params, function() {
+				wrap.makePayment(params, function(data) {
+					data = data || false;
 					log('Payment has done!');
+					data ? log(data) : null;
 				});
 			},
 			testVK: function() {
@@ -107,7 +123,7 @@
 	<ul style="display:none;" id="test-methods">
 		<li><a href="javascript:void(0);" onclick="App.postWall()">Опубликовать на стену случайному другу</a></li>
 		<li><a href="javascript:void(0);" onclick="App.makePayment()">Заплатить денег</a></li>
-		<li><a href="javascript:void(0);" onclick="wrap.inviteFriends()">Пригласить друзей</a></li>
+		<li><a href="javascript:void(0);" onclick="wrap.inviteFriends({install_message: 'install this great app'})">Пригласить друзей</a></li>
 
 		<li><a href="javascript:void(0);" onclick="App.testVK()">Только VK - getGroups</a></li>
 	</ul>

@@ -37,12 +37,18 @@ var MmSocialApi = function(params, callback) {
 			});
 		},
 		// utilities
-		inviteFriends : function(callback) {
+		inviteFriends : function() {
+			var local_params = arguments[0] || null;
+			var local_callback = arguments[1] || null;
+			if (typeof local_params == 'function') {
+				local_callback = local_params;
+			}
+
 			wrap_api(function() {
 				var eventINVId = mailru.events.listen(mailru.app.events.friendsInvitation, function(event) {
 					if (event.status !== 'opened') {
 						mailru.events.remove(eventINVId);
-						callback ? callback(event) : null;
+						local_callback ? local_callback(event) : null;
 					}
 				});
 				mailru.app.friends.invite();
