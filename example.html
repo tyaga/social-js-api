@@ -10,7 +10,7 @@
 	<script type="text/javascript" language="javascript">
 		jQuery(document).ready(function() {
 			// создается глобальный враппер с заданным именем
-			new SocialApiWrapper('<?=$_GET['api']?>', App.wrapper_params, App.init);
+			new SocialApiWrapper(_get(document.location.search).api, App.wrapper_params, App.init);
 		});
 
 		var App = {
@@ -90,6 +90,15 @@
 				jQuery('#debug').html(JSON.stringify(arguments[i], null, '  '));
 			}
 		}
+		function _get(queryString) {
+			queryString = queryString.split("+").join(" ");
+			var params = {}, tokens;
+			var re = /[?&]?([^=]+)=([^&]*)/g;
+			while (tokens = re.exec(queryString)) {
+				params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+			}
+			return params;
+		}
 	</script>
 </head>
 
@@ -108,9 +117,7 @@
 	</pre>
 </body>
 
-</html>
-<?
-/*
+<!--
 http://developers.facebook.com/docs/reference/dialogs/feed/
 FB:
 	to: The ID or username of the profile that this story will be published to. If this is unspecified, it defaults to the the value of from.
@@ -141,5 +148,6 @@ VK:
 	owner_id: идентификатор пользователя, у которого должна быть опубликована запись. Если параметр не задан, то считается, что он равен идентификатору текущего пользователя.
 	message: текст сообщения (является обязательным, если не задан параметр attachment)
 	attachment: медиа-приложение к записи
-*/
-?>
+-->
+
+</html>
