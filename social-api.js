@@ -11,8 +11,10 @@ var SocialApiWrapper = function(driver, params, callback) {
 
 		// resize
 		init_resize_canvas: false,
-		define_max_height_fn: function() {
-			return jQuery(document.body).outerHeight(true);
+		min_height: 1000,
+		define_height_fn: function() {
+			var height = jQuery(document.body).outerHeight(true);
+			return height > params.min_height ? height : params.min_height;
 		},
 		resize_interval: 500
 	}, params);
@@ -39,14 +41,13 @@ var SocialApiWrapper = function(driver, params, callback) {
 				return 'OkSocialApi';
 				break;
 		}
-		return '';
+		return false;
 	};
 
 	var moduleExport = {
 		initResizeCanvas: function() {
 			window.setInterval(function() {
-				// @todo добавить min_height
-				wrap().resizeWindow({height: params.define_max_height_fn()});
+				wrap().resizeWindow({height: params.define_height_fn()});
 			}, params.resize_interval);
 		},
 		initContext: function(localParams, callback) {
@@ -76,20 +77,10 @@ var SocialApiWrapper = function(driver, params, callback) {
 				case "OkSocialApi": return full?'odnoklassniki':'ok';
 			}
 		}
-		// и так тоже не получается
-/*		postWall_wr: function(params, callback, errorback) {
-			log('postWall_wr');
-			try{
-				wrap().postWall(params, callback);
-			}
-			catch(e) {
-				errorback ? errorback() : null;
-			}
-		}*/
 	};
 
 	var driverName = resolveApiName(driver);
-	if (driverName == '') {
+	if (!driverName) {
 		return false;
 	}
 
@@ -97,20 +88,6 @@ var SocialApiWrapper = function(driver, params, callback) {
 	jQuery.getScript(params.api_path + driverName + '.js', function() {
 		// create local wrapper
 		var privateSocialWrapper = new window[driverName](params, function() {
-
-			/* @todo переписать, не работает
-			for (var i in privateSocialWrapper.moduleExport) {
-				var method = privateSocialWrapper.moduleExport[i];
-				if (!(typeof method == 'function')) continue;
-				privateSocialWrapper.moduleExport[i] = function() {
-					try {
-						return method.apply(this, arguments);
-					} catch(e) {
-						log(e);
-					}
-				};
-			}
-			*/
 
 			// creating global wrapper variable
 			window[params.wrapperName] = jQuery.extend(moduleExport, privateSocialWrapper.moduleExport);

@@ -13,58 +13,86 @@ var VkSocialApi = function(params, callback) {
 		raw: null,
 
 		// information methods
-		getFriends : function(callback) {
+		getFriends : function(callback, errback) {
 			VK.api('friends.get', { uid: VK.params.viewer_id, fields: params.fields}, function(data) {
-				//if (data.error) throw data.error;
-
-				callback ? callback(data.response) : null;
-			});
-		},
-		getCurrentUser : function(callback) {
-			VK.loadParams(document.location.href);
-			VK.api('getProfiles', {uids: VK.params.viewer_id, fields: params.fields}, function(data) {
-				//if (data.error) throw data.error;
-
-				callback ? callback(data.response[0]) : null;
-			});
-		},
-		getAppFriends : function(callback) {
-			VK.api('execute', {code: 'API.getAppFriends();'}, function(data) {
-				//if (data.error) throw data.error;
-
+				if (data.error) {
+					return errback ? errback(data.error) : callback([]);
+				}
 				if (data.response === null) {
 					data.response = [];
 				}
-				callback ? callback(data.response) : null;
+				return callback(data.response);
+			});
+		},
+		getCurrentUser : function(callback, errback) {
+			VK.loadParams(document.location.href);
+			VK.api('getProfiles', {uids: VK.params.viewer_id, fields: params.fields}, function(data) {
+				if (data.error) {
+					return errback ? errback(data.error) : callback({});
+				}
+
+				return callback(data.response[0]);
+			});
+		},
+		getAppFriends : function(callback, errback) {
+			VK.api('execute', {code: 'API.getAppFriends();'}, function(data) {
+				if (data.error) {
+					errback ? errback(data.error) : callback({});
+				}
+				if (data.response === null) {
+					data.response = [];
+				}
+				callback(data.response);
 			});
 		},
 		// utilities
-		inviteFriends : function(callback) {
+		inviteFriends : function() {
+			var params = arguments[0] || null;
+			var callback = arguments[1] || null;
+			if (typeof params == 'function') {
+				callback = params;
+			}
+
 			VK.addCallback('onWindowFocus', function() {
 				VK.removeCallback('onWindowFocus');
-				callback ? callback() : null;
+				return callback ? callback() : null;
 			});
 			VK.callMethod('showInviteBox');
 		},
 		resizeWindow : function(params, callback) {
 			VK.callMethod('resizeWindow', params.width, params.height);
-			callback ? callback() : null;
+			return callback ? callback() : null;
 		},
 		// service methods
-		postWall : function(params, callback) {
+		postWall : function(params, callback, errback) {
 			params = jQuery.extend({id: VK.params.viewer_id}, params);
 
 			VK.api('wall.post', {owner_id: params.id, message: params.message}, function(data) {
-				//if (data.error) throw data.error;
-
-				callback ? callback(data.response) : null;
+				if (data.error) {
+					return errback ? errback(data.error) : callback(data.error);
+				}
+				return callback(data.response);
 			});
 		},
-		makePayment : function(params, callback) {
+		// как это сделать правильно?
+		makePayment : function(params, callback, errback, closeDialogback) {
+			// @todo что тут делать с errback?
+			var balanceChanged = false;
 			VK.addCallback('onWindowFocus', function() {
 				VK.removeCallback('onWindowFocus');
-				callback ? callback() : null;
+
+				if (!balanceChanged) {
+					return closeDialogback ? closeDialogback() : callback();
+				}
 			});
+			VK.addCallback('onBalanceChanged', function() {
+				VK.removeCallback('onBalanceChanged');
+
+				balanceChanged = true;
+
+				return callback();
+			});
+
 			VK.callMethod('showPaymentBox', params.votes);
 		}
 	};

@@ -18,19 +18,6 @@ var OkSocialApi = function(params, callback) {
 		apiUrl = 'http://api-sandbox.odnoklassniki.ru:8088/js/fapi.js';
 	}
 	// private
-	var wrap_callback = function(callback) {
-		if (typeof callback == 'function') {
-			window.API_callback = function(method, result, data) {
-
-				data = jQuery.parseJSON(data);
-				data.result = result;
-
-				delete window.API_callback;
-
-				callback(data);
-			};
-		}		
-	};
 
 	var callRaw = function(method, params, callback) {
 		params = jQuery.extend({
@@ -45,67 +32,81 @@ var OkSocialApi = function(params, callback) {
 		raw: null,
 
 		// information methods
-		getFriends : function(callback) {
+		getFriends : function(callback, errback) {
 			callRaw('friends.get', {}, function(status, data, error) {
 				if (status == 'ok') {
 					callRaw('users.getInfo', {fields: params.fields, uids: data.join(',')}, function(status, data, error) {
 						if (status == 'ok') {
-							callback ? callback(data) : null;
+							return callback(data);
 						}
-						else callback ? callback(error) : null;
+						return errback ? errback(error) : callback(error);
 					});
 				}
-				else callback ? callback(error) : null;
+				else {
+					return errback ? errback(error) : callback(error);
+				}
 			});
 		},
-		getCurrentUser : function(callback) {
+		getCurrentUser : function(callback, errback) {
 			callRaw('users.getInfo', {fields: params.fields, uids: FAPI.Client.uid}, function(status, data, error) {
 				if (status == 'ok') {
-					callback ? callback(data[0]) : null;
+					return callback(data[0]);
 				}
-				else callback ? callback(error) : null;
+				else {
+					return errback ? errback(error) : callback(error);
+				}
 			});
 		},
-		getAppFriends : function(callback) {
+		getAppFriends : function(callback, errback) {
 			callRaw('friends.getAppUsers', {}, function(status, data, error) {
 				if (status == 'ok') {
 					callRaw('users.getInfo', {fields: params.fields, uids: data.uids.join(',')}, function(status, data, error) {
 						if (status == 'ok') {
-							callback ? callback(data) : null;
+							return callback(data);
 						}
-						else callback ? callback(error) : null;
+						return errback ? errback(error) : callback(error);
 					});
 				}
-				else callback ? callback(error) : null;
+				else {
+					return errback ? errback(error) : callback(error);
+				}
 			});
 		},
 		// utilities
 		inviteFriends : function() {
-			var params = arguments[0] || null;
-			var callback = arguments[1] || null;
-			if (typeof params == 'function') {
-				callback = params;
+			var local_params = arguments[0] || null;
+			var local_callback = arguments[1] || null;
+			if (typeof local_params == 'function') {
+				local_callback = local_params;
 			}
-			FAPI.UI.showInvite(params.install_message);
+			FAPI.UI.showInvite(local_params.install_message);
 			
-			callback ? callback() : null;
+			return local_callback ? local_callback() : null;
 		},
 		resizeWindow : function(params, callback) {
 			FAPI.UI.setWindowSize(params.width, params.height);
 
-			callback ? callback() : null;
+			return callback ? callback() : null;
 		},
 		// service methods
-		postWall : function(params, callback) {
+		postWall : function(params, callback, errback) {
 			params = jQuery.extend({id: FAPI.Client.uid}, params);
 
 			window.API_callback = function(method, status, attributes) {
+				delete window.API_callback;
+				// в апи не реализован вызов callback на отмене приглашения запостить на стену
+				if (status != 'ok') {
+					return errback ? errback(attributes) : callback(attributes);
+				}
 				if (method == 'showConfirmation' && status == 'ok') {
 					publishMessage.resig = attributes;
-					callRaw('stream.publish', publishMessage, callback);
+					callRaw('stream.publish', publishMessage, function(data) {
+						// @todo доделать errback(data);
+						return callback(data);
+					});
 				}
-				delete window.API_callback;
 			};
+			// @todo добавить обработку с uid
 			var publishMessage = {
 				message: params.message,
 				method: "stream.publish",
@@ -117,9 +118,17 @@ var OkSocialApi = function(params, callback) {
 
 			FAPI.UI.showConfirmation("stream.publish", params.message, publishMessage.sig);
 		},
-		makePayment : function(params, callback) {
-			wrap_callback(callback);
-			
+		makePayment : function(params, callback, errback, closeDialogback) {
+			window.API_callback = function(method, result, data) {
+				delete window.API_callback;
+
+				// @todo проверка ошибки, errback, closeDialogback
+
+				// @todo какие тут приходят данные?
+				data = jQuery.parseJSON(data);
+				data.result = result;
+				return callback(data);
+			};
 			FAPI.UI.showPayment(params.name, params.description, null, null, JSON.stringify(params.items), [], 'ok', true);
 		}
 	};

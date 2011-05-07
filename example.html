@@ -51,10 +51,12 @@
 
 			postWall: function() {
 				wrap.postWall({
-					id: App.context.friends.sort(function(){return Math.random()})[0].uid,
+					//id: App.context.friends.sort(function(){return Math.random()})[0].uid,
 					message: 'Странное сообщение на стену'
 				}, function() {
 					log('Message to the wall has posted', arguments);
+				}, function(event){
+					log(event);
 				});
 			},
 			makePayment: function() {
@@ -64,13 +66,13 @@
 						params = {
 							service_id: 1,
 							service_name: 'дьявольские вилы',
-							sms_price: 3,
+							sms_price: 1,
 							other_price : 4000
 						};
 						break;
 					case 'vk':
 						params = {
-							votes: 5
+							votes: 1
 						};
 						break;
 					case 'ok':
@@ -89,6 +91,10 @@
 					data = data || false;
 					log('Payment has done!');
 					data ? log(data) : null;
+				}, function() {
+					log('Error payment');
+				}, function(event){
+					log('Dialog closed', event);
 				});
 			},
 			testVK: function() {

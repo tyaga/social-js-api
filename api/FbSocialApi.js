@@ -12,19 +12,22 @@ var FbSocialApi = function(params, callback) {
 		raw: null,
 
 		// information methods
-		getFriends : function(callback) {
+		getFriends : function(callback, errback) {
 			FB.Data.query('SELECT ' + params.fields + ' FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me())').wait(function(data) {
-				callback ? callback(data) : null;
+				// @todo проверка ошибки, errback
+				return callback(data);
 			});
 		},
-		getCurrentUser : function(callback) {
+		getCurrentUser : function(callback, errback) {
 			FB.api('me', {locale : 'en_US'}, function(data) {
-				callback ? callback(data) : null;
+				// @todo проверка ошибки, errback
+				return callback(data);
 			});
 		},
-		getAppFriends : function(callback) {
+		getAppFriends : function(callback, errback) {
 			FB.api({method : 'friends.getAppUsers'}, function(data) {
-				callback ? callback(data) : null;
+				// @todo проверка ошибки, errback
+				return callback(data);
 			});
 		},
 		// utilities
@@ -36,27 +39,32 @@ var FbSocialApi = function(params, callback) {
 			}
 
 			FB.ui({method : 'apprequests', message : local_params.install_message, data : {} }, function(data){
-				local_callback ? local_callback(data) : null;
+				return local_callback ? local_callback(data) : null;
 			});
 		},
 		resizeWindow : function(params, callback) {
 			FB.Canvas.setAutoResize(false);
 			FB.Canvas.setSize(params.height);
-			callback ? callback() : null;
+			return callback ? callback() : null;
 		},
 		// service methods
-		postWall : function(params, callback) {
+		postWall : function(params, callback, errback) {
 			params = jQuery.extend({id: FB.getSession().uid}, params);
 			params.to = params.id;
 
 			FB.ui(jQuery.extend({method: 'feed'}, params), function(response) {
-				callback ? callback(response) : null;
+				// @todo проверка ошибки, errback
+				return callback(response);
 			});
 		},
-		makePayment : function(params, callback) {
+		makePayment : function(params, callback, errback, closeDialogback) {
 			FB.ui({ method: 'pay', order_info: params.order_info, purchase_type: 'item' }, function(data){
 				if (data['order_id']) {
-					callback ? callback(data) : null;
+					return callback(data);
+				}
+				else {
+					return callback({});
+					// @todo проверка ошибки, errback, closeDialogback
 				}
 			});
 		}
