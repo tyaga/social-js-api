@@ -67,7 +67,7 @@ var MmSocialApi = function(params, callback) {
 				mailru.app.friends.invite();
 			});
 		},
-		resizeWindow : function(params, callback) {
+		resizeCanvas : function(params, callback) {
 			mailru.app.utils.setHeight(params.height);
 			return callback ? callback() : null;
 		},

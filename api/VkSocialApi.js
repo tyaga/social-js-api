@@ -59,7 +59,7 @@ var VkSocialApi = function(params, callback) {
 			});
 			VK.callMethod('showInviteBox');
 		},
-		resizeWindow : function(params, callback) {
+		resizeCanvas : function(params, callback) {
 			VK.callMethod('resizeWindow', params.width, params.height);
 			return callback ? callback() : null;
 		},

@@ -42,7 +42,7 @@ var FbSocialApi = function(params, callback) {
 				return local_callback ? local_callback(data) : null;
 			});
 		},
-		resizeWindow : function(params, callback) {
+		resizeCanvas : function(params, callback) {
 			FB.Canvas.setAutoResize(false);
 			FB.Canvas.setSize(params.height);
 			return callback ? callback() : null;

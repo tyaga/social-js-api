@@ -47,7 +47,7 @@ var SocialApiWrapper = function(driver, params, callback) {
 	var moduleExport = {
 		initResizeCanvas: function() {
 			window.setInterval(function() {
-				wrap().resizeWindow({height: params.define_height_fn()});
+				wrap().resizeCanvas({height: params.define_height_fn()});
 			}, params.resize_interval);
 		},
 		initContext: function(localParams, callback) {

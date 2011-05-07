@@ -83,7 +83,7 @@ var OkSocialApi = function(params, callback) {
 			
 			return local_callback ? local_callback() : null;
 		},
-		resizeWindow : function(params, callback) {
+		resizeCanvas : function(params, callback) {
 			FAPI.UI.setWindowSize(params.width, params.height);
 
 			return callback ? callback() : null;
