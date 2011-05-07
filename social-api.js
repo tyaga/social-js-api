@@ -1,29 +1,128 @@
 var SocialApiWrapper = function(driver, params, callback) {
+	// default settings
 	params = jQuery.extend({
-		api_path: 'api/'
+		// env settings
+		api_path: 'api/',
+		wrapperName: 'socialWrapper',
+
+		// init wrapper settings
+		init_user: false,
+		init_friends: false,
+
+		// resize
+		init_resize_canvas: false,
+		define_max_height_fn: function() {
+			return jQuery(document.body).outerHeight(true);
+		},
+		resize_interval: 500
 	}, params);
+	
+	// чтобы удобно обращаться к wrap
+	var wrap = function() {
+		return window[params.wrapperName];
+	};
 
 	// private
 	var resolveApiName = function(driverName) {
-		var name = '';
 		switch (driverName.toLowerCase()) {
+			// @todo: переписать
 			case 'vk': case 'vkontakte':
-				name = 'VkSocialApi';
+				return 'VkSocialApi';
 				break;
 			case 'mm': case 'mir': case 'mail': case 'mailru':
-				name = 'MmSocialApi';
+				return 'MmSocialApi';
 				break;
 			case 'fb': case 'facebook':
-				name = 'FbSocialApi';
+				return 'FbSocialApi';
+				break;
+			case 'ok': case 'odnoklassniki':
+				return 'OkSocialApi';
 				break;
 		}
-		return name;
+		return '';
 	};
 
-	// constructor
+	var moduleExport = {
+		initResizeCanvas: function() {
+			window.setInterval(function() {
+				// @todo добавить min_height
+				wrap().resizeWindow({height: params.define_max_height_fn()});
+			}, params.resize_interval);
+		},
+		initContext: function(localParams, callback) {
+			// сюда сохраняем, чтоб потом вернуть
+			var context = {};
+
+			var friendsCallback = function(friends) {
+				context.friends = friends;
+				wrap().getAppFriends(function(appFriends) {
+					context.appFriends = appFriends;
+					callback ? callback(context) : null;
+				});
+			};
+			var currentUserCallback = function(user) {
+				context.current = user;
+				localParams.init_friends ? wrap().getFriends(friendsCallback) : friendsCallback({});
+			};
+			localParams.init_user ? wrap().getCurrentUser(currentUserCallback) : currentUserCallback({});
+		},
+		getApiName: function() {
+			var full = arguments[0] || false;
+			switch (driverName) {
+				// @todo: переписать
+				case "VkSocialApi": return full?'vkontakte':'vk';
+				case "MmSocialApi": return full?'mail':'mm';
+				case "FbSocialApi": return full?'facebook':'fb';
+				case "OkSocialApi": return full?'odnoklassniki':'ok';
+			}
+		}
+		// и так тоже не получается
+/*		postWall_wr: function(params, callback, errorback) {
+			log('postWall_wr');
+			try{
+				wrap().postWall(params, callback);
+			}
+			catch(e) {
+				errorback ? errorback() : null;
+			}
+		}*/
+	};
+
 	var driverName = resolveApiName(driver);
+	if (driverName == '') {
+		return false;
+	}
+
+	// constructor
 	jQuery.getScript(params.api_path + driverName + '.js', function() {
-		delete params.api_path;
-		window.socialWrapper = new window[driverName](params, init);
+		// create local wrapper
+		var privateSocialWrapper = new window[driverName](params, function() {
+
+			/* @todo переписать, не работает
+			for (var i in privateSocialWrapper.moduleExport) {
+				var method = privateSocialWrapper.moduleExport[i];
+				if (!(typeof method == 'function')) continue;
+				privateSocialWrapper.moduleExport[i] = function() {
+					try {
+						return method.apply(this, arguments);
+					} catch(e) {
+						log(e);
+					}
+				};
+			}
+			*/
+
+			// creating global wrapper variable
+			window[params.wrapperName] = jQuery.extend(moduleExport, privateSocialWrapper.moduleExport);
+			// immediately delete unnecessary global variable created inside **SocialApi
+			delete window[driverName];
+
+			// init resize
+			if (params.init_resize_canvas) {
+				wrap().initResizeCanvas();
+			}
+			// init context data
+			wrap().initContext({init_friends: params.init_friends, init_user: params.init_user}, callback);
+		});
 	});
 };

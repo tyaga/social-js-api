@@ -5,50 +5,50 @@
 	<title>API test app</title>
 
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js" type="text/javascript"></script>
-	<script src="social-api.js" type="text/javascript"></script>
+	<script src="./social-api.js" type="text/javascript"></script>
 
 	<script type="text/javascript" language="javascript">
-		function log() {
-			for (var i in arguments) {
-				console.log(arguments[i]);
-				//jQuery('#debug').html(JSON.stringify(arguments[i], null, '  '));
-			}
-		}
 		jQuery(document).ready(function() {
-			var driver = '<?=$_GET['api']?>';
-			var params = {
-				mm_key: '1b6cf14981d250cb282adf96e33b4dde',
-				fb_id: '173107166050886'
-			};
-			new SocialApiWrapper(driver, params, init);
+			// создается глобальный враппер с заданным именем
+			new SocialApiWrapper('<?=$_GET['api']?>', App.wrapper_params, App.init);
 		});
 
-		function init() {
-			var appFriendsCB = function(appFriends) {
-				App.context.appFriends = appFriends;
-				log(App.context);
-				jQuery("#test-methods").show('fast');
-			};
-			var friendsCB = function(friends) {
-				App.context.friends = friends;
-				socialWrapper.getAppFriends(appFriendsCB);
-			};
-			var currentCB = function(user) {
-				App.context.current = user;
-				socialWrapper.getFriends(friendsCB);
-			};
-			socialWrapper.getCurrentUser(currentCB);
-		}
-
 		var App = {
-			context: {
-				friends: [],
-				appFriends: [],
-				current: null
+			context: { },
+
+			wrapper_params: {
+				// имя глобальной переменной
+				wrapperName: 'wrap',
+
+				// ключи
+				mm_key: '1b6cf14981d250cb282adf96e33b4dde',
+				fb_id: '173107166050886',
+
+				// надо ли в конструкторе wrap-а сразу запустить авторесайз канваса
+				init_resize_canvas: false,
+
+				// какие данные надо проинициализировать сразу в конструкторе
+				init_user: true,
+				init_friends: true
 			},
+
+			init: function(initedContext) {
+				// так как мы отключили авторесайз, врубаем его тут, например
+				wrap.initResizeCanvas();
+				// проинициализированные данные - в returnedContext
+				App.context = initedContext;
+				
+				App.run();
+			},
+			
+			run: function() {
+				log(App.context, wrap.getApiName(true));
+				jQuery("#test-methods").show('fast');
+			},
+
 			postWall: function() {
-				socialWrapper.postWall({
-					id: App.context.friends[0].uid,
+				wrap.postWall({
+					id: App.context.friends.sort(function(){return Math.random()})[0].uid,
 					message: 'test'
 				}, function() {
 					log('Message to the wall has posted');
@@ -56,7 +56,7 @@
 			},
 			makePayment: function() {
 				var params = {};
-				switch(socialWrapper.getApiName()) {
+				switch(wrap.getApiName()) {
 					case 'mm':
 						params = {
 							service_id: 1,
@@ -71,27 +71,34 @@
 						};
 						break;
 				}
-				socialWrapper.makePayment(params, function() {
+				wrap.makePayment(params, function() {
 					log('Payment has done!');
 				});
 			},
 			testVK: function() {
-				socialWrapper.raw.api('getGroups', {}, function(data){
-					log(data.response);
-				});
+				// тестируем возможность прямого вызова методов
+				if (wrap.getApiName() == 'vk') {
+					wrap.raw.api('getGroups', {}, function(data){
+						log(data.response);
+					});
+				}
 			}
 		};
-
+		function log() {
+			for (var i in arguments) {
+				console.log(arguments[i]);
+				jQuery('#debug').html(JSON.stringify(arguments[i], null, '  '));
+			}
+		}
 	</script>
 </head>
 
 <body>
 	<h4>Тестируем методы socialWrapper</h4>
 	<ul style="display:none;" id="test-methods">
-		<li><a href="javascript:void(0);" onclick="App.postWall()">Опубликовать на стену певому в списке друзей</a></li>
+		<li><a href="javascript:void(0);" onclick="App.postWall()">Опубликовать на стену случайному другу</a></li>
 		<li><a href="javascript:void(0);" onclick="App.makePayment()">Заплатить денег</a></li>
-		<li><a href="javascript:void(0);" onclick="socialWrapper.inviteFriends()">Пригласить друзей</a></li>
-		<li><a href="javascript:void(0);" onclick="socialWrapper.resizeWindow({height: 2000});">Увеличить высоту приложения</a></li>
+		<li><a href="javascript:void(0);" onclick="wrap.inviteFriends()">Пригласить друзей</a></li>
 
 		<li><a href="javascript:void(0);" onclick="App.testVK()">Только VK - getGroups</a></li>
 	</ul>
