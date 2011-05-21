@@ -106,6 +106,7 @@ var SocialApiWrapper = function(driver, params, callback) {
 		initWrapper();
 	}
 	else {
+		jQuery.ajaxSetup({cache: true}); // restore default value
 		jQuery.getScript(params.api_path + driverName + '.js', initWrapper);
 	}
 };
