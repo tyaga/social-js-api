@@ -44,6 +44,10 @@ var SocialApiWrapper = function(driver, params, callback) {
 		return false;
 	};
 
+	var unifyProfileFields = function(profile) {
+
+	};
+
 	var moduleExport = {
 		initResizeCanvas: function() {
 			window.setInterval(function() {

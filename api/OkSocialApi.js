@@ -1,3 +1,9 @@
+/**
+ * http://dev.odnoklassniki.ru/wiki/display/ok/Odnoklassniki+JavaScript+API
+ *
+ * @param params
+ * @param callback
+ */
 var OkSocialApi = function(params, callback) {
 	var instance = this;
 
@@ -30,6 +36,13 @@ var OkSocialApi = function(params, callback) {
 	var moduleExport = {
 		// raw api object - returned from remote social network
 		raw: null,
+
+		unifyFields: {
+			id: 'uid',
+			first_name: 'first_name',
+			last_name: 'last_name',
+			photo: 'pic_1'
+		},
 
 		// information methods
 		getFriends : function(callback, errback) {
@@ -143,7 +156,7 @@ var OkSocialApi = function(params, callback) {
 			// export methods
 			instance.moduleExport = moduleExport;
 
-			callback ? callback() : null;
+				callback ? callback() : null;
 		});
 	});
 };

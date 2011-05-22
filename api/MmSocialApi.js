@@ -1,3 +1,9 @@
+/**
+ * http://api.mail.ru/docs/guides/social-apps/
+ *
+ * @param params
+ * @param callback
+ */
 var MmSocialApi = function(params, callback) {
 	var instance = this;
 
@@ -10,6 +16,13 @@ var MmSocialApi = function(params, callback) {
 	var moduleExport = {
 		// raw api object - returned from remote social network
 		raw: null,
+
+		unifyFields: {
+			id: 'uid',
+			first_name: 'first_name',
+			last_name: 'last_name',
+			photo: 'pic'
+		},
 
 		// information methods
 		getFriends : function(callback, errback) {
@@ -56,7 +69,6 @@ var MmSocialApi = function(params, callback) {
 			if (typeof local_params == 'function') {
 				local_callback = local_params;
 			}
-
 			wrap_api(function() {
 				var eventINVId = mailru.events.listen(mailru.app.events.friendsInvitation, function(event) {
 					if (event.status !== 'opened') {

@@ -11,6 +11,13 @@ var FbSocialApi = function(params, callback) {
 		// raw api object - returned from remote social network
 		raw: null,
 
+		unifyFields: {
+			id: 'uid',
+			first_name: 'first_name',
+			last_name: 'last_name',
+			photo: 'pic_square'
+		},
+
 		// information methods
 		getFriends : function(callback, errback) {
 			FB.Data.query('SELECT ' + params.fields + ' FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me())').wait(function(data) {

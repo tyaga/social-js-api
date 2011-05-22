@@ -1,3 +1,9 @@
+/**
+ * http://vkontakte.ru/developers.php
+ * 
+ * @param params
+ * @param callback
+ */
 var VkSocialApi = function(params, callback) {
 	var instance = this;
 
@@ -12,6 +18,12 @@ var VkSocialApi = function(params, callback) {
 		// raw api object - returned from remote social network
 		raw: null,
 
+		unifyFields: {
+			id: 'uid',
+			first_name: 'first_name',
+			last_name: 'last_name',
+			photo: 'photo'
+		},
 		// information methods
 		getFriends : function(callback, errback) {
 			VK.api('friends.get', { uid: VK.params.viewer_id, fields: params.fields}, function(data) {
