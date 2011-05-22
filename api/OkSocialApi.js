@@ -61,7 +61,7 @@ var OkSocialApi = function(params, callback) {
 			});
 		},
 		getCurrentUser : function(callback, errback) {
-			callRaw('users.getInfo', {fields: params.fields, uids: FAPI.Client.uid}, function(status, data, error) {
+			callRaw('users.getInfo', {fields: params.fields, uids: Object(FAPI.Util.getRequestParameters()).logged_user_id}, function(status, data, error) {
 				if (status == 'ok') {
 					return callback(data[0]);
 				}

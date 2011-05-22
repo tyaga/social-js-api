@@ -88,8 +88,7 @@ var SocialApiWrapper = function(driver, params, callback) {
 		return false;
 	}
 
-	// constructor
-	jQuery.getScript(params.api_path + driverName + '.js', function() {
+	var initWrapper = function() {
 		// create local wrapper
 		var privateSocialWrapper = new window[driverName](params, function() {
 
@@ -105,5 +104,13 @@ var SocialApiWrapper = function(driver, params, callback) {
 			// init context data
 			wrap().initContext({init_friends: params.init_friends, init_user: params.init_user}, callback);
 		});
-	});
+	};
+	// constructor
+	if (typeof window[driverName] == 'function') {
+		initWrapper();
+	}
+	else {
+		jQuery.ajaxSetup({cache: true}); // restore default value
+		jQuery.getScript(params.api_path + driverName + '.js', initWrapper);
+	}
 };
