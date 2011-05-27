@@ -22,7 +22,11 @@ var MmSocialApi = function(params, callback) {
 			first_name: 'first_name',
 			last_name: 'last_name',
 			photo: 'pic',
-			gender: function(profile) { return profile.sex == 0 ? 'male' : 'female'; }
+			gender: function() {
+				var value = arguments[0] || false;
+				if (!value) { return 'sex'; }
+				return value == 0 ? 'male' : 'female';
+			}
 		},
 
 		// information methods

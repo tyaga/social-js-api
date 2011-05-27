@@ -23,12 +23,16 @@ var VkSocialApi = function(params, callback) {
 			first_name: 'first_name',
 			last_name: 'last_name',
 			photo: 'photo',
-			// @todo тут придумать, как не передавать profile
-			gender: function(profile) { return profile.sex == 2 ? 'male' : 'female'; }
+
+			gender: function() {
+				var value = arguments[0] || false;
+				if (!value) { return 'sex'; }
+				return value == 2 ? 'male' : 'female';
+			}
 		},
 		// information methods
 		getProfiles: function(uids, callback, errback) {
-			VK.api('getProfiles', {uids: uid, fields: params.fields}, function(data) {
+			VK.api('getProfiles', {uids: uids, fields: params.fields}, function(data) {
 				if (data.error) {
 					return errback ? errback(data.error) : callback({});
 				}

@@ -42,7 +42,11 @@ var OkSocialApi = function(params, callback) {
 			first_name: 'first_name',
 			last_name: 'last_name',
 			photo: 'pic_1',
-			gender: function(profile) { return profile.gender == 'male' ? 'male' : 'female'; }
+			gender: function() {
+				var value = arguments[0] || false;
+				if (!value) { return 'sex'; }
+				return value == 'male' ? 'male' : 'female';
+			}
 		},
 
 		// information methods

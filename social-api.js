@@ -5,13 +5,15 @@ var SocialApiWrapper = function(driver, params, callback) {
 		api_path: 'api/',
 		wrapperName: 'socialWrapper',
 
-		// init wrapper settings
+		// init context settings
 		init_user: false,
 		init_friends: false,
+
+		// unify profile settings
 		unify_profile_fields: false,
 		not_unified_fields: true,
 
-		// resize
+		// resize settings
 		init_resize_canvas: false,
 		min_height: 1000,
 		define_height_fn: function() {
@@ -20,13 +22,20 @@ var SocialApiWrapper = function(driver, params, callback) {
 		},
 		resize_interval: 500
 	}, params);
-	
-	// чтобы удобно обращаться к wrap
+
+	/**
+	 * чтобы удобно обращаться к глобальному wrap
+	 */
 	var wrap = function() {
 		return window[params.wrapperName];
 	};
 
 	// private
+	/**
+	 * Возвращает название класса для драйвера соцсети
+	 * 
+	 * @param driverName
+	 */
 	var resolveApiName = function(driverName) {
 		switch (driverName.toLowerCase()) {
 			// @todo: переписать
@@ -45,25 +54,37 @@ var SocialApiWrapper = function(driver, params, callback) {
 		}
 		return false;
 	};
-
+	/**
+	 * Заменяет свойства profile значениями из массива unifyFields
+	 *
+	 * @param profile object
+	 */
 	var unifyProfileFields = function(profile) {
+		// если нет настройки, то вернуть profile
 		if (!params.unify_profile_fields) {
 			return profile;
 		}
 		var unifyFields = wrap().unifyFields;
 
+		// проходим по всем полям unified
 		var result = {};
 		for (var field in unifyFields) {
 			var fieldItem = unifyFields[field];
 
+			// по нужному ключу
 			if (fieldItem in profile && typeof fieldItem == 'string') {
 				result[field] = profile[fieldItem];
+				// удалили записанное
 				delete profile[fieldItem];
 			}
 			else {
-				result[field] = fieldItem(profile);
+				// например, пол - разные значения в разных соцсетях
+				var fieldName = fieldItem();
+				result[field] = fieldItem(profile[fieldName]);
+				delete profile[fieldName];
 			}
 		}
+		// если наряду с сведенными надо сохранить обычные
 		if (params.not_unified_fields) {
 			for (var not_unified_field in profile) {
 				result[not_unified_field] = profile[not_unified_field];
@@ -73,13 +94,21 @@ var SocialApiWrapper = function(driver, params, callback) {
 	};
 
 	var moduleExport = {
+		/**
+		 * Инициализация автоизменения размера iframe приложения
+		 */
 		initResizeCanvas: function() {
 			window.setInterval(function() {
 				wrap().resizeCanvas({height: params.define_height_fn()});
 			}, params.resize_interval);
 		},
+		/**
+		 * Получает данные о текущем пользователе
+		 *
+		 * @param localParams {init_friends, init_user}
+		 * @param callback сюда будет передан context
+		 */
 		initContext: function(localParams, callback) {
-			// сюда сохраняем, чтоб потом вернуть
 			var context = {};
 
 			var friendsCallback = function(friends) {
@@ -95,7 +124,12 @@ var SocialApiWrapper = function(driver, params, callback) {
 			};
 			localParams.init_user ? wrap().getCurrentUser(currentUserCallback) : currentUserCallback({});
 		},
-		getApiName: function() {
+		/**
+		 * Возвращает название текущей соцсети
+		 *
+		 * @param full формат вывода
+		 */
+		getApiName: function(/*full = false*/) {
 			var full = arguments[0] || false;
 			switch (driverName) {
 				// @todo: переписать
@@ -105,6 +139,11 @@ var SocialApiWrapper = function(driver, params, callback) {
 				case "OkSocialApi": return full?'odnoklassniki':'ok';
 			}
 		},
+		/**
+		 * Заменяет свойства profile значениями из массива unifyFields
+		 *
+		 * @param data array|object
+		 */
 		unifyProfileFields: function (data) {
 			var is_array = true;
 			if (!(data instanceof Array)) {
