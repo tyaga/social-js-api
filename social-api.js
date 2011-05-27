@@ -8,6 +8,8 @@ var SocialApiWrapper = function(driver, params, callback) {
 		// init wrapper settings
 		init_user: false,
 		init_friends: false,
+		unify_profile_fields: false,
+		not_unified_fields: true,
 
 		// resize
 		init_resize_canvas: false,
@@ -45,7 +47,29 @@ var SocialApiWrapper = function(driver, params, callback) {
 	};
 
 	var unifyProfileFields = function(profile) {
+		if (!params.unify_profile_fields) {
+			return profile;
+		}
+		var unifyFields = wrap().unifyFields;
 
+		var result = {};
+		for (var field in unifyFields) {
+			var fieldItem = unifyFields[field];
+
+			if (fieldItem in profile && typeof fieldItem == 'string') {
+				result[field] = profile[fieldItem];
+				delete profile[fieldItem];
+			}
+			else {
+				result[field] = fieldItem(profile);
+			}
+		}
+		if (params.not_unified_fields) {
+			for (var not_unified_field in profile) {
+				result[not_unified_field] = profile[not_unified_field];
+			}
+		}
+		return result;
 	};
 
 	var moduleExport = {
@@ -80,6 +104,18 @@ var SocialApiWrapper = function(driver, params, callback) {
 				case "FbSocialApi": return full?'facebook':'fb';
 				case "OkSocialApi": return full?'odnoklassniki':'ok';
 			}
+		},
+		unifyProfileFields: function (data) {
+			var is_array = true;
+			if (!(data instanceof Array)) {
+				is_array = false;
+				data = [data];
+			}
+			for (var i in data) {
+				var item = data[i];
+				data[i] = unifyProfileFields(item);
+			}
+			return is_array ? data : data[0];
 		}
 	};
 

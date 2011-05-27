@@ -21,10 +21,22 @@ var MmSocialApi = function(params, callback) {
 			id: 'uid',
 			first_name: 'first_name',
 			last_name: 'last_name',
-			photo: 'pic'
+			photo: 'pic',
+			gender: function(profile) { return profile.sex == 0 ? 'male' : 'female'; }
 		},
 
 		// information methods
+		getProfiles : function(uids, callback, errback) {
+			wrap_api(function() {
+				mailru.common.users.getInfo(function(data) {
+					if (data.error) {
+						return errback ? errback(data.error) : callback({});
+					}
+
+					return callback(data[0]);
+				}, uids);
+			});
+		},
 		getFriends : function(callback, errback) {
 			wrap_api(function() {
 				mailru.common.friends.getExtended(function(data) {
@@ -34,7 +46,7 @@ var MmSocialApi = function(params, callback) {
 					if (data.response === null) {
 						data.response = [];
 					}
-					return callback(data);
+					return callback(window[params.wrapperName].unifyProfileFields(data));
 				});
 			});
 		},
@@ -44,8 +56,7 @@ var MmSocialApi = function(params, callback) {
 					if (data.error) {
 						return errback ? errback(data.error) : callback({});
 					}
-					
-					return callback(data[0]);
+					return callback(window[params.wrapperName].unifyProfileFields(data[0]));
 				});
 			});
 		},
@@ -58,7 +69,7 @@ var MmSocialApi = function(params, callback) {
 					if (data === null) {
 						data = [];
 					}
-					return callback(data);
+					return callback(window[params.wrapperName].unifyProfileFields(data));
 				}, { ext: true });
 			});
 		},

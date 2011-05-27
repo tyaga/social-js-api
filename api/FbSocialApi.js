@@ -15,25 +15,35 @@ var FbSocialApi = function(params, callback) {
 			id: 'uid',
 			first_name: 'first_name',
 			last_name: 'last_name',
-			photo: 'pic_square'
+			photo: 'pic_square',
+			gender: function(profile) { return profile.sex == 'male' ? 'male' : 'female'; }
 		},
 
 		// information methods
-		getFriends : function(callback, errback) {
-			FB.Data.query('SELECT ' + params.fields + ' FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me())').wait(function(data) {
+		getProfiles : function(uids, callback, errback) {
+/*			FB.api('me', {locale : 'en_US'}, function(data) {
 				// @todo проверка ошибки, errback
 				return callback(data);
 			});
+*/
+			return callback({});
+		},
+		getFriends : function(callback, errback) {
+			FB.Data.query('SELECT ' + params.fields + ' FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me())').wait(function(data) {
+				// @todo проверка ошибки, errback
+				return callback(window[params.wrapperName].unifyProfileFields(data));
+			});
 		},
 		getCurrentUser : function(callback, errback) {
-			FB.api('me', {locale : 'en_US'}, function(data) {
+			FB.Data.query('SELECT ' + params.fields + ' FROM user WHERE uid = me()').wait(function(data) {
 				// @todo проверка ошибки, errback
-				return callback(data);
+				return callback(window[params.wrapperName].unifyProfileFields(data[0]));
 			});
 		},
 		getAppFriends : function(callback, errback) {
 			FB.api({method : 'friends.getAppUsers'}, function(data) {
 				// @todo проверка ошибки, errback
+				// @todo добавить получение профилей
 				return callback(data);
 			});
 		},

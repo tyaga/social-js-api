@@ -41,16 +41,27 @@ var OkSocialApi = function(params, callback) {
 			id: 'uid',
 			first_name: 'first_name',
 			last_name: 'last_name',
-			photo: 'pic_1'
+			photo: 'pic_1',
+			gender: function(profile) { return profile.gender == 'male' ? 'male' : 'female'; }
 		},
 
 		// information methods
+		getProfiles : function(uids, callback, errback) {
+			callRaw('users.getInfo', {fields: params.fields, uids: uids}, function(status, data, error) {
+				if (status == 'ok') {
+					return callback(data);
+				}
+				else {
+					return errback ? errback(error) : callback(error);
+				}
+			});
+		},
 		getFriends : function(callback, errback) {
 			callRaw('friends.get', {}, function(status, data, error) {
 				if (status == 'ok') {
 					callRaw('users.getInfo', {fields: params.fields, uids: data.join(',')}, function(status, data, error) {
 						if (status == 'ok') {
-							return callback(data);
+							return callback(window[params.wrapperName].unifyProfileFields(data));
 						}
 						return errback ? errback(error) : callback(error);
 					});
@@ -63,7 +74,7 @@ var OkSocialApi = function(params, callback) {
 		getCurrentUser : function(callback, errback) {
 			callRaw('users.getInfo', {fields: params.fields, uids: Object(FAPI.Util.getRequestParameters()).logged_user_id}, function(status, data, error) {
 				if (status == 'ok') {
-					return callback(data[0]);
+					return callback(window[params.wrapperName].unifyProfileFields(data[0]));
 				}
 				else {
 					return errback ? errback(error) : callback(error);
@@ -75,7 +86,7 @@ var OkSocialApi = function(params, callback) {
 				if (status == 'ok') {
 					callRaw('users.getInfo', {fields: params.fields, uids: data.uids.join(',')}, function(status, data, error) {
 						if (status == 'ok') {
-							return callback(data);
+							return callback(window[params.wrapperName].unifyProfileFields(data));
 						}
 						return errback ? errback(error) : callback(error);
 					});

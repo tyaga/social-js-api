@@ -22,9 +22,19 @@ var VkSocialApi = function(params, callback) {
 			id: 'uid',
 			first_name: 'first_name',
 			last_name: 'last_name',
-			photo: 'photo'
+			photo: 'photo',
+			// @todo тут придумать, как не передавать profile
+			gender: function(profile) { return profile.sex == 2 ? 'male' : 'female'; }
 		},
 		// information methods
+		getProfiles: function(uids, callback, errback) {
+			VK.api('getProfiles', {uids: uid, fields: params.fields}, function(data) {
+				if (data.error) {
+					return errback ? errback(data.error) : callback({});
+				}
+				return callback(data.response);
+			});
+		},
 		getFriends : function(callback, errback) {
 			VK.api('friends.get', { uid: VK.params.viewer_id, fields: params.fields}, function(data) {
 				if (data.error) {
@@ -33,7 +43,7 @@ var VkSocialApi = function(params, callback) {
 				if (data.response === null) {
 					data.response = [];
 				}
-				return callback(data.response);
+				return callback(window[params.wrapperName].unifyProfileFields(data.response));
 			});
 		},
 		getCurrentUser : function(callback, errback) {
@@ -42,8 +52,7 @@ var VkSocialApi = function(params, callback) {
 				if (data.error) {
 					return errback ? errback(data.error) : callback({});
 				}
-
-				return callback(data.response[0]);
+				return callback(window[params.wrapperName].unifyProfileFields(data.response[0]));
 			});
 		},
 		getAppFriends : function(callback, errback) {
@@ -54,6 +63,7 @@ var VkSocialApi = function(params, callback) {
 				if (data.response === null) {
 					data.response = [];
 				}
+				// @todo добавить получение профилей
 				callback(data.response);
 			});
 		},
