@@ -43,17 +43,20 @@ var OkSocialApi = function(params, callback) {
 			last_name: 'last_name',
 			photo: 'pic_1',
 			gender: function() {
-				var value = arguments[0] || false;
-				if (!value) { return 'sex'; }
+				var value = arguments.length ? arguments[0] : false;
+				if (value === false) { return 'gender'; }
 				return value == 'male' ? 'male' : 'female';
 			}
 		},
 
 		// information methods
 		getProfiles : function(uids, callback, errback) {
-			callRaw('users.getInfo', {fields: params.fields, uids: uids}, function(status, data, error) {
+			if (! (uids instanceof Array)) {
+				uids = (uids+'').split(',');
+			}
+			callRaw('users.getInfo', {fields: params.fields, uids: uids.join(',')}, function(status, data, error) {
 				if (status == 'ok') {
-					return callback(data);
+					return callback(window[params.wrapperName].unifyProfileFields(data));
 				}
 				else {
 					return errback ? errback(error) : callback(error);
@@ -63,12 +66,7 @@ var OkSocialApi = function(params, callback) {
 		getFriends : function(callback, errback) {
 			callRaw('friends.get', {}, function(status, data, error) {
 				if (status == 'ok') {
-					callRaw('users.getInfo', {fields: params.fields, uids: data.join(',')}, function(status, data, error) {
-						if (status == 'ok') {
-							return callback(window[params.wrapperName].unifyProfileFields(data));
-						}
-						return errback ? errback(error) : callback(error);
-					});
+					moduleExport.getProfiles(data.join(','), callback, errback);
 				}
 				else {
 					return errback ? errback(error) : callback(error);
@@ -76,24 +74,12 @@ var OkSocialApi = function(params, callback) {
 			});
 		},
 		getCurrentUser : function(callback, errback) {
-			callRaw('users.getInfo', {fields: params.fields, uids: Object(FAPI.Util.getRequestParameters()).logged_user_id}, function(status, data, error) {
-				if (status == 'ok') {
-					return callback(window[params.wrapperName].unifyProfileFields(data[0]));
-				}
-				else {
-					return errback ? errback(error) : callback(error);
-				}
-			});
+			moduleExport.getProfiles(Object(FAPI.Util.getRequestParameters()).logged_user_id, function(data) { callback(data[0]); }, errback);
 		},
 		getAppFriends : function(callback, errback) {
 			callRaw('friends.getAppUsers', {}, function(status, data, error) {
 				if (status == 'ok') {
-					callRaw('users.getInfo', {fields: params.fields, uids: data.uids.join(',')}, function(status, data, error) {
-						if (status == 'ok') {
-							return callback(window[params.wrapperName].unifyProfileFields(data));
-						}
-						return errback ? errback(error) : callback(error);
-					});
+					moduleExport.getProfiles(data.uids.join(','), callback, errback);
 				}
 				else {
 					return errback ? errback(error) : callback(error);

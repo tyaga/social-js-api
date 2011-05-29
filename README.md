@@ -5,6 +5,7 @@ social-js-api - это JS-обертка для использования ря�
 *  socialWrapper.getFriends
 *  socialWrapper.getCurrentUser
 *  socialWrapper.getAppFriends
+*  socialWrapper.getProfiles
 *  socialWrapper.inviteFriends
 *  socialWrapper.resizeCanvas
 *  socialWrapper.postWall

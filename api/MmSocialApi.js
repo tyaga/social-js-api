@@ -23,22 +23,24 @@ var MmSocialApi = function(params, callback) {
 			last_name: 'last_name',
 			photo: 'pic',
 			gender: function() {
-				var value = arguments[0] || false;
-				if (!value) { return 'sex'; }
+				var value = arguments.length ? arguments[0] : false;
+				if (value === false) { return 'sex'; }
 				return value == 0 ? 'male' : 'female';
 			}
 		},
 
 		// information methods
 		getProfiles : function(uids, callback, errback) {
+			if (! (uids instanceof Array)) {
+				uids = (uids+'').split(',');
+			}
 			wrap_api(function() {
 				mailru.common.users.getInfo(function(data) {
 					if (data.error) {
 						return errback ? errback(data.error) : callback({});
 					}
-
-					return callback(data[0]);
-				}, uids);
+					return callback(window[params.wrapperName].unifyProfileFields(data));
+				}, uids.join(','));
 			});
 		},
 		getFriends : function(callback, errback) {
@@ -55,14 +57,7 @@ var MmSocialApi = function(params, callback) {
 			});
 		},
 		getCurrentUser : function(callback, errback) {
-			wrap_api(function() {
-				mailru.common.users.getInfo(function(data) {
-					if (data.error) {
-						return errback ? errback(data.error) : callback({});
-					}
-					return callback(window[params.wrapperName].unifyProfileFields(data[0]));
-				});
-			});
+			moduleExport.getProfiles(mailru.session.vid, function(data) { callback(data[0]); }, errback);
 		},
 		getAppFriends : function(callback, errback) {
 			wrap_api(function() {

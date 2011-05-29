@@ -21,7 +21,7 @@ var FbSocialApi = function(params, callback) {
 			last_name: 'last_name',
 			photo: 'pic_square',
 			gender: function() {
-				var value = arguments[0] || false;
+				var value = arguments.length ? arguments[0] : false;
 				if (!value) { return 'sex'; }
 				return value == 'male' ? 'male' : 'female';
 			}
@@ -29,9 +29,12 @@ var FbSocialApi = function(params, callback) {
 
 		// information methods
 		getProfiles : function(uids, callback, errback) {
-			FB.Data.query(getUserFql(params.fields, uids)).wait(function(data) {
+			if (! (uids instanceof Array)) {
+				uids = (uids+'').split(',');
+			}
+			FB.Data.query(getUserFql(params.fields, uids.join(','))).wait(function(data) {
 				// @todo проверка ошибки, errback
-				return callback(window[params.wrapperName].unifyProfileFields(data[0]));
+				return callback(window[params.wrapperName].unifyProfileFields(data));
 			});
 		},
 		getFriends : function(callback, errback) {
@@ -41,15 +44,10 @@ var FbSocialApi = function(params, callback) {
 			});
 		},
 		getCurrentUser : function(callback, errback) {
-			FB.Data.query(getUserFql(params.fields, 'me()')).wait(function(data) {
-				// @todo проверка ошибки, errback
-				return callback(window[params.wrapperName].unifyProfileFields(data[0]));
-			});
+			moduleExport.getProfiles(FB.getSession().uid, function(data) { callback(data[0]); }, errback);
 		},
 		getAppFriends : function(callback, errback) {
 			FB.api({method : 'friends.getAppUsers'}, function(data) {
-				// @todo проверка ошибки, errback
-				
 				// @todo добавить получение профилей
 				return callback(data);
 			});

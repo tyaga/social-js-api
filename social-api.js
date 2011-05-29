@@ -23,6 +23,12 @@ var SocialApiWrapper = function(driver, params, callback) {
 		resize_interval: 500
 	}, params);
 
+	var driverNames = {
+		VkSocialApi: ['vk', 'vkontakte'],
+		MmSocialApi: ['mm', 'mail', 'mir', 'mailru'],
+		FbSocialApi: ['fb', 'facebook'],
+		OkSocialApi: ['ok', 'odnoklassniki', 'odkl']
+	};
 	/**
 	 * чтобы удобно обращаться к глобальному wrap
 	 */
@@ -37,20 +43,13 @@ var SocialApiWrapper = function(driver, params, callback) {
 	 * @param driverName
 	 */
 	var resolveApiName = function(driverName) {
-		switch (driverName.toLowerCase()) {
-			// @todo: переписать
-			case 'vk': case 'vkontakte':
-				return 'VkSocialApi';
-				break;
-			case 'mm': case 'mir': case 'mail': case 'mailru':
-				return 'MmSocialApi';
-				break;
-			case 'fb': case 'facebook':
-				return 'FbSocialApi';
-				break;
-			case 'ok': case 'odnoklassniki': case 'odkl':
-				return 'OkSocialApi';
-				break;
+		for (var driver in driverNames) {
+			var names = driverNames[driver];
+			for (var i in names) {
+				if (driverName == names[i]) {
+					return driver;
+				}
+			}
 		}
 		return false;
 	};
@@ -130,14 +129,7 @@ var SocialApiWrapper = function(driver, params, callback) {
 		 * @param full формат вывода
 		 */
 		getApiName: function(/*full = false*/) {
-			var full = arguments[0] || false;
-			switch (driverName) {
-				// @todo: переписать
-				case "VkSocialApi": return full?'vkontakte':'vk';
-				case "MmSocialApi": return full?'mail':'mm';
-				case "FbSocialApi": return full?'facebook':'fb';
-				case "OkSocialApi": return full?'odnoklassniki':'ok';
-			}
+			return driverNames[driverName][(arguments[0] ? 1 : 0)];
 		},
 		/**
 		 * Заменяет свойства profile значениями из массива unifyFields
@@ -185,7 +177,7 @@ var SocialApiWrapper = function(driver, params, callback) {
 		initWrapper();
 	}
 	else {
-		jQuery.ajaxSetup({cache: true}); // restore default value
+		//jQuery.ajaxSetup({cache: true}); // restore default value
 		jQuery.getScript(params.api_path + driverName + '.js', initWrapper);
 	}
 };

@@ -10,6 +10,8 @@ var VkSocialApi = function(params, callback) {
 	var apiUrl = 'http://vkontakte.ru/js/api/xd_connection.js?2';
 
 	params = jQuery.extend({
+		/*uid,first_name,last_name,nickname,sex,bdate,city,
+		country,timezone,photo,photo_medium,photo_big,domain*/
 		fields: 'uid,first_name,last_name,nickname,sex,bdate,city,country,timezone,photo,photo_medium,photo_big,domain',
 		width: 827
 	}, params);
@@ -25,18 +27,21 @@ var VkSocialApi = function(params, callback) {
 			photo: 'photo',
 
 			gender: function() {
-				var value = arguments[0] || false;
+				var value = arguments.length ? arguments[0] : false;
 				if (!value) { return 'sex'; }
 				return value == 2 ? 'male' : 'female';
 			}
 		},
 		// information methods
 		getProfiles: function(uids, callback, errback) {
-			VK.api('getProfiles', {uids: uids, fields: params.fields}, function(data) {
+			if (! (uids instanceof Array)) {
+				uids = (uids+'').split(',');
+			}
+			VK.api('getProfiles', {uids: uids.join(','), fields: params.fields}, function(data) {
 				if (data.error) {
 					return errback ? errback(data.error) : callback({});
 				}
-				return callback(data.response);
+				return callback(window[params.wrapperName].unifyProfileFields(data.response));
 			});
 		},
 		getFriends : function(callback, errback) {
@@ -52,12 +57,7 @@ var VkSocialApi = function(params, callback) {
 		},
 		getCurrentUser : function(callback, errback) {
 			VK.loadParams(document.location.href);
-			VK.api('getProfiles', {uids: VK.params.viewer_id, fields: params.fields}, function(data) {
-				if (data.error) {
-					return errback ? errback(data.error) : callback({});
-				}
-				return callback(window[params.wrapperName].unifyProfileFields(data.response[0]));
-			});
+			moduleExport.getProfiles(VK.params.viewer_id, function(data) { callback(data[0]); }, errback);
 		},
 		getAppFriends : function(callback, errback) {
 			VK.api('execute', {code: 'API.getAppFriends();'}, function(data) {
