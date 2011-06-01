@@ -38,7 +38,10 @@
 				unify_profile_fields: true,
 
 				// оставлять остальные поля профиля
-				not_unified_fields: false
+				not_unified_fields: false,
+				
+				// поля, которые надо выбрать
+				fields: ['id','birthdate','gender']
 			},
 
 			init: function(initedContext) {
@@ -51,13 +54,13 @@
 			},
 			
 			run: function() {
-				log(App.context, wrap.getApiName(true));
+				log(wrap.getApiName(true), App.context);
 				jQuery("#test-methods").show('fast');
 			},
 
 			postWall: function() {
 				wrap.postWall({
-					//id: App.context.friends.sort(function(){return Math.random()})[0].uid,
+					id: App.context.friends.sort(function(){return Math.random()})[0].uid,
 					message: 'Странное сообщение на стену'
 				}, function() {
 					log('Message to the wall has posted', arguments);

@@ -12,6 +12,10 @@ var MmSocialApi = function(params, callback) {
 	var wrap_api = function(fn) {
 		mailru.loader.require('api', fn);
 	};
+	
+	var wrap = function() {
+		return window[params.wrapperName];
+	};
 
 	var moduleExport = {
 		// raw api object - returned from remote social network
@@ -21,7 +25,13 @@ var MmSocialApi = function(params, callback) {
 			id: 'uid',
 			first_name: 'first_name',
 			last_name: 'last_name',
+			birthdate: 'birthday',
+			nickname: 'nick',
+
 			photo: 'pic',
+//			pic_small
+//			pic_big
+
 			gender: function() {
 				var value = arguments.length ? arguments[0] : false;
 				if (value === false) { return 'sex'; }
@@ -39,7 +49,7 @@ var MmSocialApi = function(params, callback) {
 					if (data.error) {
 						return errback ? errback(data.error) : callback({});
 					}
-					return callback(window[params.wrapperName].unifyProfileFields(data));
+					return callback(wrap().unifyProfileFields(data));
 				}, uids.join(','));
 			});
 		},
@@ -52,7 +62,7 @@ var MmSocialApi = function(params, callback) {
 					if (data.response === null) {
 						data.response = [];
 					}
-					return callback(window[params.wrapperName].unifyProfileFields(data));
+					return callback(wrap().unifyProfileFields(data));
 				});
 			});
 		},
@@ -68,7 +78,7 @@ var MmSocialApi = function(params, callback) {
 					if (data === null) {
 						data = [];
 					}
-					return callback(window[params.wrapperName].unifyProfileFields(data));
+					return callback(wrap().unifyProfileFields(data));
 				}, { ext: true });
 			});
 		},

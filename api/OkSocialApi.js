@@ -10,14 +10,12 @@ var OkSocialApi = function(params, callback) {
 	// params
 	params = jQuery.extend({
 		ok_sanbox: false,
-		width: 760,
-		/*fields: 'uid,first_name,last_name,name,gender,birthday,age,locale,' +
-				'current_status,current_status_id,current_status_date,' +
-				'pic_1,pic_2,pic_3,pic_4,' +
-				'url_profile,url_profile_mobile,url_chat,url_chat_mobile,' +
-				'has_email'*/
-		fields: 'uid,first_name,last_name,name,gender,birthday,age,pic_1,pic_2,pic_3,pic_4'
+		width: 760
 	}, params);
+
+	var wrap = function() {
+		return window[params.wrapperName];
+	};
 
 	var apiUrl = 'http://api.odnoklassniki.ru/js/fapi.js';
 	if (params.ok_sanbox) {
@@ -41,7 +39,14 @@ var OkSocialApi = function(params, callback) {
 			id: 'uid',
 			first_name: 'first_name',
 			last_name: 'last_name',
+			birthdate: 'birthday',
+			nickname: 'name',
+
 			photo: 'pic_1',
+			//pic_2
+			//pic_3
+			//pic_4
+
 			gender: function() {
 				var value = arguments.length ? arguments[0] : false;
 				if (value === false) { return 'gender'; }
@@ -54,9 +59,9 @@ var OkSocialApi = function(params, callback) {
 			if (! (uids instanceof Array)) {
 				uids = (uids+'').split(',');
 			}
-			callRaw('users.getInfo', {fields: params.fields, uids: uids.join(',')}, function(status, data, error) {
+			callRaw('users.getInfo', {fields: wrap().getApiFields(params.fields), uids: uids.join(',')}, function(status, data, error) {
 				if (status == 'ok') {
-					return callback(window[params.wrapperName].unifyProfileFields(data));
+					return callback(wrap().unifyProfileFields(data));
 				}
 				else {
 					return errback ? errback(error) : callback(error);

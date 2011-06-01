@@ -10,11 +10,12 @@ var VkSocialApi = function(params, callback) {
 	var apiUrl = 'http://vkontakte.ru/js/api/xd_connection.js?2';
 
 	params = jQuery.extend({
-		/*uid,first_name,last_name,nickname,sex,bdate,city,
-		country,timezone,photo,photo_medium,photo_big,domain*/
-		fields: 'uid,first_name,last_name,nickname,sex,bdate,city,country,timezone,photo,photo_medium,photo_big,domain',
 		width: 827
 	}, params);
+
+	var wrap = function() {
+		return window[params.wrapperName];
+	};
 
 	var moduleExport = {
 		// raw api object - returned from remote social network
@@ -24,7 +25,14 @@ var VkSocialApi = function(params, callback) {
 			id: 'uid',
 			first_name: 'first_name',
 			last_name: 'last_name',
-			photo: 'photo',
+			birthdate: 'bdate',
+			nickname: 'nickname',
+
+			photo: 'photo', // 50px
+//			photo_medium: 'photo_medium', // 100px
+//			photo_big: 'photo_big', // 200px
+//			photo_medium_rec: 'photo_medium_rec', // 100px sq
+//			photo_rec: 'photo_rec', // 50px sq
 
 			gender: function() {
 				var value = arguments.length ? arguments[0] : false;
@@ -37,22 +45,22 @@ var VkSocialApi = function(params, callback) {
 			if (! (uids instanceof Array)) {
 				uids = (uids+'').split(',');
 			}
-			VK.api('getProfiles', {uids: uids.join(','), fields: params.fields}, function(data) {
+			VK.api('getProfiles', {uids: uids.join(','), fields: wrap().getApiFields(params.fields)}, function(data) {
 				if (data.error) {
 					return errback ? errback(data.error) : callback({});
 				}
-				return callback(window[params.wrapperName].unifyProfileFields(data.response));
+				return callback(wrap().unifyProfileFields(data.response));
 			});
 		},
 		getFriends : function(callback, errback) {
-			VK.api('friends.get', { uid: VK.params.viewer_id, fields: params.fields}, function(data) {
+			VK.api('friends.get', { uid: VK.params.viewer_id, fields: wrap().getApiFields(params.fields)}, function(data) {
 				if (data.error) {
 					return errback ? errback(data.error) : callback([]);
 				}
 				if (data.response === null) {
 					data.response = [];
 				}
-				return callback(window[params.wrapperName].unifyProfileFields(data.response));
+				return callback(wrap().unifyProfileFields(data.response));
 			});
 		},
 		getCurrentUser : function(callback, errback) {

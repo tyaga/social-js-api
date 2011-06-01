@@ -9,6 +9,22 @@ var SocialApiWrapper = function(driver, params, callback) {
 		init_user: false,
 		init_friends: false,
 
+		/**
+		 * унифиц. поля, которые надо выбрать.
+		 * см. [api].unifyFields
+		 * можно так: "id,gender,photo"
+		 *
+		 */
+		fields: [
+			'id',
+			'first_name',
+			'last_name',
+			'nickname',
+			'birthdate',
+			'gender',
+			'photo'
+		],
+
 		// unify profile settings
 		unify_profile_fields: false,
 		not_unified_fields: true,
@@ -23,6 +39,10 @@ var SocialApiWrapper = function(driver, params, callback) {
 		resize_interval: 500
 	}, params);
 
+	if (typeof params.fields == 'string') {
+		params.fields = (params.fields).split(',');
+	}
+
 	var driverNames = {
 		VkSocialApi: ['vk', 'vkontakte'],
 		MmSocialApi: ['mm', 'mail', 'mir', 'mailru'],
@@ -30,7 +50,7 @@ var SocialApiWrapper = function(driver, params, callback) {
 		OkSocialApi: ['ok', 'odnoklassniki', 'odkl']
 	};
 	/**
-	 * чтобы удобно обращаться к глобальному wrap
+	 * глобальный wrapper
 	 */
 	var wrap = function() {
 		return window[params.wrapperName];
@@ -69,19 +89,13 @@ var SocialApiWrapper = function(driver, params, callback) {
 		var result = {};
 		for (var field in unifyFields) {
 			var fieldItem = unifyFields[field];
+			var fieldName = typeof fieldItem == 'string' ? fieldItem : fieldItem();
 
-			// по нужному ключу
-			if (fieldItem in profile && typeof fieldItem == 'string') {
-				result[field] = profile[fieldItem];
-				// удалили записанное
-				delete profile[fieldItem];
+			if (!(fieldName in profile) || $.inArray(field, params.fields) < 0 ) {
+				continue;
 			}
-			else {
-				// например, пол - разные значения в разных соцсетях
-				var fieldName = fieldItem();
-				result[field] = fieldItem(profile[fieldName]);
-				delete profile[fieldName];
-			}
+			result[field] = typeof fieldItem == 'string' ? profile[fieldItem] : fieldItem(profile[fieldName]);
+			delete profile[fieldName];
 		}
 		// если наряду с сведенными надо сохранить обычные
 		if (params.not_unified_fields) {
@@ -147,6 +161,22 @@ var SocialApiWrapper = function(driver, params, callback) {
 				data[i] = unifyProfileFields(item);
 			}
 			return is_array ? data : data[0];
+		},
+		/**
+		 * Возвращает поля, которые передаются в вызовы api
+		 *
+		 * @param fields
+		 */
+		getApiFields: function(fields) {
+			var res = [];
+			for (var i in fields) {
+				var field = wrap().unifyFields[params.fields[i]];
+				if (typeof field == 'function') {
+					field = field();
+				}
+				res.push(field);
+			}
+			return res.join(',');
 		}
 	};
 

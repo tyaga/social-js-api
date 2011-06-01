@@ -3,9 +3,11 @@ var FbSocialApi = function(params, callback) {
 
 	var apiUrl = 'http://connect.facebook.net/en_US/all.js';
 
-	params = jQuery.extend({
-		fields: 'uid,first_name,middle_name,last_name,name,locale,current_location,pic_square,profile_url,sex'
-	}, params);
+	/*params = jQuery.extend({}, params);*/
+
+	var wrap = function() {
+		return window[params.wrapperName];
+	};
 
 	var getUserFql = function(fields, uids) {
 		return 'SELECT ' + fields + ' FROM user WHERE uid IN (' + uids + ')';
@@ -19,7 +21,9 @@ var FbSocialApi = function(params, callback) {
 			id: 'uid',
 			first_name: 'first_name',
 			last_name: 'last_name',
+
 			photo: 'pic_square',
+
 			gender: function() {
 				var value = arguments.length ? arguments[0] : false;
 				if (!value) { return 'sex'; }
@@ -32,15 +36,15 @@ var FbSocialApi = function(params, callback) {
 			if (! (uids instanceof Array)) {
 				uids = (uids+'').split(',');
 			}
-			FB.Data.query(getUserFql(params.fields, uids.join(','))).wait(function(data) {
+			FB.Data.query(getUserFql(wrap().getApiFields(params.fields), uids.join(','))).wait(function(data) {
 				// @todo проверка ошибки, errback
-				return callback(window[params.wrapperName].unifyProfileFields(data));
+				return callback(wrap().unifyProfileFields(data));
 			});
 		},
 		getFriends : function(callback, errback) {
-			FB.Data.query(getUserFql(params.fields, 'SELECT uid2 FROM friend WHERE uid1 = me()')).wait(function(data) {
+			FB.Data.query(getUserFql(wrap().getApiFields(params.fields), 'SELECT uid2 FROM friend WHERE uid1 = me()')).wait(function(data) {
 				// @todo проверка ошибки, errback
-				return callback(window[params.wrapperName].unifyProfileFields(data));
+				return callback(wrap().unifyProfileFields(data));
 			});
 		},
 		getCurrentUser : function(callback, errback) {
