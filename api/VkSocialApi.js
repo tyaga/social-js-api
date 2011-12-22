@@ -41,11 +41,15 @@ var VkSocialApi = function(params, callback) {
 			}
 		},
 		// information methods
-		getProfiles: function(uids, callback, errback) {
+		getProfiles: function(uids, name_case, callback, errback) {
 			if (! (uids instanceof Array)) {
 				uids = (uids+'').split(',');
 			}
-			VK.api('getProfiles', {uids: uids.join(','), fields: wrap().getApiFields(params.fields)}, function(data) {
+			if (typeof name_case == 'function') {
+				callback = arguments[1];
+				errback = arguments[2];
+			}
+			VK.api('getProfiles', {uids: uids.join(','), fields: wrap().getApiFields(params.fields), name_case: name_case}, function(data) {
 				if (data.error) {
 					return errback ? errback(data.error) : callback({});
 				}
