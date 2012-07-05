@@ -1,5 +1,5 @@
 /**
- * http://vkontakte.ru/developers.php
+ * http://vk.com/developers.php
  * 
  * @param params
  * @param callback
@@ -7,7 +7,7 @@
 var VkSocialApi = function(params, callback) {
 	var instance = this;
 
-	var apiUrl = 'http://vkontakte.ru/js/api/xd_connection.js?2';
+	var apiUrl = 'http://vk.com/js/api/xd_connection.js?2';
 
 	params = jQuery.extend({
 		width: 827
